@@ -1,0 +1,104 @@
+*{
+  box-sizing: border-box;
+  margin:0px;
+  padding:0px;
+}
+
+body {
+  margin:0px;
+  padding:0px;  
+  background: #363759;
+  background: linear-gradient(217deg, rgba(50,58,91,.8), rgba(255,0,0,0) 70.71%),
+          linear-gradient(127deg, rgba(54,52,88,.8), rgba(0,255,0,0) 70.71%),
+          linear-gradient(336deg, rgba(55,51,87,.8), rgba(0,0,255,0) 70.71%);
+}
+
+.wrapper{
+  min-height: 1000px;
+}
+
+.container  .box {
+  background : #27262c;
+  color : #fff;
+  border-radius:30px;
+  overflow:hidden;
+}
+.container  .box .header{
+  border-bottom: 0.5px solid #eee;
+}
+.container .box .header .fa{
+  font-size:25px;
+  color:#89a9d9;
+}
+
+.container  .box .selectBox{
+  display: flex;
+  justify-content: space-between;
+  padding:5px;
+}
+.container  .box  select{
+  border:0;
+  background:none !important;
+  -webkit-appearance: none !important;
+  color:#fff;
+}
+
+.container  .box input{
+  min-height: 60px;
+  border-radius: 20px;
+  border: none;
+  outline: none;
+  padding: 20px;
+  background: #372e47 !important;
+  color: #fff;
+  font-weight: bolder;
+  font-size: 20px;
+}
+
+.container .box .content h3{
+  font-size: 19px;
+  color:#f4eeff;
+}
+
+.container .box .content span{
+  font-size: 13px;
+  color:#f4eeff;
+}
+
+.container  .box .display .info{
+  border: 1px solid #000;
+  border-radius: 20px;
+}
+
+.container  .box .display .info .detail{
+  border: 1px solid #000;
+  border-radius: 20px;
+}
+
+.container  .box button.mainBtn{
+  width:100%;
+  height: 50px !important;
+  border-radius: 20px;
+  border: none;
+  margin: 5px auto;
+  background-color: #20c7d4 !important;
+  color: #fff;
+}
+
+.container  .box .display h4{
+  font-size: 15px;
+  padding: 10px;
+}
+
+
+
+img{
+  width: 25px;
+  border-radius: 50%;
+}
+
+@media (min-width: 200px) and (max-width: 768px) {
+  .container .box .header .fa{
+      font-size:15px;
+  }
+}
