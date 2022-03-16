@@ -1,5 +1,5 @@
 import {WEB3_REQUEST,WEB3_SUCCESS ,WEB3_FAIL  , RIGELPOOL_REQUEST,RIGELPOOL_SUCCESS ,RIGELPOOL_FAIL,
-    WALLET_CONNECT_REQUEST, WALLET_CONNECT_SUCCESS  , WALLET_DISCONNECT_SUCCESS,
+    WALLET_CONNECT_REQUEST, WALLET_CONNECT_SUCCESS  , WALLET_DISCONNECT_SUCCESS, INITIALIZE_USER_ADDRESS
 } from "../constants";
 import {getReadOnlyProvider, isEmpty , getRigelPoolContract , message} from "../utils"
 
@@ -42,18 +42,31 @@ export const setUpRigelPool = (obj = {}) => {
   //User Actions
 export const setUpUser = ({ provider, address, status }) => {
     return async (dispatch) => {
-      dispatch({ type: WALLET_CONNECT_REQUEST });
-      if (status === 'connect') {
-        localStorage.setItem('user', JSON.stringify({ address }));
-        dispatch({
-          type: WALLET_CONNECT_SUCCESS,
-          payload: { address, provider },
-        });
-      } else if (status === 'disconnect') {
-        dispatch({
-          type: WALLET_DISCONNECT_SUCCESS,
-        });
-        localStorage.removeItem('user');
+
+      try{
+        dispatch({ type: WALLET_CONNECT_REQUEST });
+        if (status === 'connect') {
+          localStorage.setItem('user', JSON.stringify({ address }));
+          dispatch({
+            type: WALLET_CONNECT_SUCCESS,
+            payload: { address, provider },
+          });
+        } else if (status === 'disconnect') {
+          dispatch({
+            type: WALLET_DISCONNECT_SUCCESS,
+          });
+          localStorage.removeItem('user');
+        }
+      }catch(error){
+
       }
+
     };
   };
+
+
+  export const  setUserAddress =  (address) => {
+    return async (dispatch) => {
+        dispatch({type: INITIALIZE_USER_ADDRESS,payload : address });
+      }
+  }

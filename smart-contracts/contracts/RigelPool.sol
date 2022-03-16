@@ -132,8 +132,8 @@ contract RigelPool is ReentrancyGuard, Ownable {
         pairExist(P._token1, P._token2)
     {
         bytes32 pairHash = _getHash(P._token1, P._token2);
-        IERC20(P._token1).safeApprove(address(this), P._amount1);
-        IERC20(P._token2).safeApprove(address(this), P._amount2);
+        IERC20(P._token1).safeIncreaseAllowance(address(this), P._amount1);
+        IERC20(P._token2).safeIncreaseAllowance(address(this), P._amount2);
         IERC20(P._token1).safeTransferFrom(
             msg.sender,
             address(this),
@@ -189,6 +189,6 @@ contract RigelPool is ReentrancyGuard, Ownable {
     **/
     function getProviderLiquidity(address _token1 , address _token2) external validAddress(_token1) validAddress(_token2)   pairExist(_token1,_token2) view returns(uint amount1 , uint amount2) {
          bytes32  pairHash = _getHash(_token1,_token2);
-         return (providerLiquidity[msg.sender][pairHash].amount1, providerLiquidity[msg.sender][pairHash].amount1);
+         return (providerLiquidity[msg.sender][pairHash].amount1, providerLiquidity[msg.sender][pairHash].amount2);
     }
 }

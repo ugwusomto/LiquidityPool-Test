@@ -14,6 +14,8 @@ module.exports = async (deployer, network, accounts) => {
     zrx;
     let owner = accounts[0];
     let person1 = accounts[1];
+    let person2 = accounts[2];
+
 
     await Promise.all([
       deployer.deploy(Busd),
@@ -56,8 +58,65 @@ module.exports = async (deployer, network, accounts) => {
       bet.faucet(person1, betAmount),
       rep.faucet(person1, repAmount),
       zrx.faucet(person1, zrxAmount),
+      busd.faucet(person2, busdAmount),
+      bet.faucet(person2, betAmount),
+      rep.faucet(person2, repAmount),
+      zrx.faucet(person2, zrxAmount),
     ]);
 
    
+  }else if(network === "binanceTestnet"){
+    let rigelpool,
+    busd,
+    bet,
+    rep,
+    zrx;
+    let owner = accounts[0];
+
+
+
+    await Promise.all([
+      deployer.deploy(Busd),
+      deployer.deploy(Bet),
+      deployer.deploy(Rep),
+      deployer.deploy(Zrx),
+    ]);
+
+     [busd,bet,rep,zrx] = await Promise.all([
+        Busd.deployed(),
+        Bet.deployed(),
+        Rep.deployed(),
+        Zrx.deployed(),
+    ]);
+
+
+    await  deployer.deploy(RigelPool,busd.address,bet.address,rep.address,zrx.address);
+    rigelpool = RigelPool.deployed();
+    busdAmount = ethers.utils.parseUnits(
+      '10000',
+      (await busd.decimals()).toString()
+    );
+
+    betAmount = ethers.utils.parseUnits(
+        '10000',
+        (await bet.decimals()).toString()
+      );
+    
+      repAmount = ethers.utils.parseUnits(
+        '10000',
+        (await rep.decimals()).toString()
+      );
+      zrxAmount = ethers.utils.parseUnits(
+        '10000',
+        (await zrx.decimals()).toString()
+      );
+
+    await Promise.all([
+      busd.faucet(owner, busdAmount),
+      bet.faucet(owner, betAmount),
+      rep.faucet(owner, repAmount),
+      zrx.faucet(owner, zrxAmount),
+    ]);
+
   }
 };

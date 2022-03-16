@@ -49,7 +49,7 @@ export const connectWallet = async (web3) => {
       const address = await signNer.getAddress();
       const network = await web3.getNetwork();
       if(network.chainId !== NETWORKS[NETWORKS["ACTIVE"]].chainId){
-        // requestNetworkhange(network);
+        requestNetworkhange(network);
       }
       return [signNer, address];
     } else {

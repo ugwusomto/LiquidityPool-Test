@@ -5,13 +5,12 @@ import {
   connectWallet,
   getContract,
   tokenToWei,
-  weiToToken
 } from './utils';
 import { useSelector, useDispatch } from 'react-redux';
-import { setUpUser, setUpWeb3, setUpRigelPool } from './store/action';
-import { tokens, NETWORKS } from './constants/index';
+import { setUpUser, setUpWeb3, setUpRigelPool,setUserAddress } from './store/action';
+import { tokens, NETWORKS , BACKEND_API } from './constants/index';
 import * as ERC20Tokens from './contracts';
-import {BigNumber} from "ethers"
+import axios from "axios";
 
 function App() {
   const web3 = useSelector((state) => state.web3);
@@ -24,11 +23,13 @@ function App() {
     amount2: '',
   });
   const [dataPrices, setPrices] = useState({
-    token1Price: '',
-    token2Price: '',
-    share: ''
+    token1Price: 0,
+    token2Price: 0,
+    share: 0
   });
   const [images, setImages] = useState({ img1: '', img2: '' });
+
+
   const dispatch = useDispatch();
 
   const connectUser = async (e) => {
@@ -63,20 +64,32 @@ function App() {
   };
 
   const tokenSelectHandler = (e) => {
-
-
+    
+    if(e.target.name === 'amount1' && isNaN((e.target.value))){ return}
+    if(e.target.name === 'amount2' && isNaN((e.target.value))){ return}
     if(e.target.name === 'token1' && e.target.value === data.token2){ setData({ ...data, token1: '' }); setImages({ ...images, img1: '' }); return}
     if(e.target.name === 'token2' && e.target.value === data.token1){setData({ ...data, token2: '' });setImages({ ...images, img2: '' });return}
 
-
     if (e.target.name === 'token1' && !isEmpty(e.target.value)) {
-       
       setImages({ ...images, img1: tokens[e.target.value].logo });
     }
 
     if (e.target.name === 'token2' && !isEmpty(e.target.value)) {
       setImages({ ...images, img2: tokens[e.target.value].logo });
     }
+
+    if(e.target.name === 'amount1' && !isEmpty(e.target.value) && !isEmpty(dataPrices.token1Price)){
+      const _data = data;
+      _data.amount2 =Math.round(e.target.value/dataPrices.token1Price)
+      setData(_data);
+    }
+
+    if(e.target.name === 'amount2' && !isEmpty(e.target.value) && !isEmpty(dataPrices.token2Price)){
+      const _data = data;
+      _data.amount1 = Math.round(e.target.value/dataPrices.token2Price)
+      setData(_data);
+    }
+
     setData({ ...data, [e.target.name]: e.target.value });
   };
 
@@ -100,10 +113,10 @@ function App() {
 
     try {
       const chainId = isEmpty(
-        tokens[data.token1].address[NETWORKS['ACTIVE'].chainId]
+        tokens[data.token1].address[NETWORKS[NETWORKS['ACTIVE']].chainId]
       )
         ? 5777
-        : NETWORKS['ACTIVE'].chainId;
+        : NETWORKS[NETWORKS['ACTIVE']].chainId;
       const obj = {
         _token1: tokens[data.token1].address[chainId],
         _token2: tokens[data.token2].address[chainId],
@@ -156,6 +169,7 @@ function App() {
       if (allowance2 < weiAmount2) {
         await token2Obj.approve(rigelpool.instance.address, weiAmount2); // approve contract to spend this wei
       }
+
       const transaction = await rigelpool.instance
         .connect(user.provider)
         .addLiquidity(obj, { from: user.address });
@@ -219,41 +233,46 @@ function App() {
       if (
         !isEmpty(data.token1) &&
         !isEmpty(data.token2) &&
-        !isEmpty(rigelpool)
+        !isEmpty(rigelpool.instance)
       ) {
+       
          try{
           const network_id = isEmpty(
-            tokens[data.token1].address[NETWORKS['ACTIVE'].chainId]
-          ) ? 5777 : NETWORKS['ACTIVE'].chainId;
+            tokens[data.token1].address[NETWORKS[NETWORKS["ACTIVE"]].chainId]
+          ) ? 5777 :NETWORKS[NETWORKS["ACTIVE"]].chainId;
+
+
+    
+
           const token1 =  tokens[data.token1].address[network_id];
           const token2 =  tokens[data.token2].address[network_id];
+
+       
           const pairLiquidity = await rigelpool.instance
             .connect(user.provider)
             .getPairLiquidity(token1, token2, { from: user.address });
+
+
           const providerLiquidity = await rigelpool.instance
             .connect(user.provider)
             .getProviderLiquidity(token1, token2, { from: user.address });
-  
-            const poolReserve1 = weiToToken(pairLiquidity.amount1,tokens[data.token1].decimals);
-            const poolReserve2 = weiToToken(pairLiquidity.amount2,tokens[data.token2].decimals);
-            const poolReserve1User = weiToToken(providerLiquidity.amount1,tokens[data.token1].decimals);
-            const poolReserve2User = weiToToken(providerLiquidity.amount2,tokens[data.token2].decimals);
-            const kP = (BigNumber.from(poolReserve1)).mul(BigNumber.from(poolReserve2));
-            
-            const kpUser = (BigNumber.from(poolReserve1User)).mul(BigNumber.from(poolReserve2User));
-            
+    
+            const poolReserve1 = pairLiquidity.amount1.toString()
+            const poolReserve2 = pairLiquidity.amount2.toString()
+            const poolReserve1User = providerLiquidity.amount1.toString()
+            const poolReserve2User = providerLiquidity.amount2.toString()
+            const kP = poolReserve1* poolReserve2;
+            const kpUser = poolReserve1User*poolReserve2User;
             const token1Price = poolReserve2/(isEmpty(parseFloat(poolReserve1)) ? 1 : poolReserve1);
             const token2Price = poolReserve1/(isEmpty(parseFloat(poolReserve2)) ? 1 : poolReserve2);
-            console.log(kP,kpUser)
             const share = (100*kpUser)/(isEmpty(parseFloat(kP)) ? 1 : kP);
-            
             setPrices({
               token1Price: token1Price,
               token2Price: token2Price,
               share:share
             })
          }catch(e){
-
+          console.log(e)
          }
       }
     };
@@ -262,16 +281,58 @@ function App() {
   }, [rigelpool, data]);
 
   useEffect(() => {
-    if ( !isEmpty(rigelpool) && !isEmpty(rigelpool.instance)) {
-      rigelpool.instance.on('LiquidityProvided',(provider,token1,token2,amount1,amount2,event)=>{
-        console.log({provider,token1,token2,amount1 : amount1.toString() , amount2 : amount2.toString() ,event})
-        if((provider === user.address) && (amount1 === data.amount1) && (amount2 === data.amount2)){
-          message('success','Liquidity Provider Successfully');
-          setData({    token1: '',token2: '', amount1: '',amount2: '',})
+    
+ 
+      if ( !isEmpty(rigelpool) && !isEmpty(rigelpool.instance)) {
+        try{
+          rigelpool.instance.on('LiquidityProvided',async (provider,token1,token2,amount1,amount2,time,event)=>{
+            if((provider === user.address) && (amount1 == data.amount1) && (amount2 == data.amount2)){
+              message('success','Liquidity Provider Successfully');
+              setData({  ...data,  amount1: '',amount2: '',});
+              await axios.post(BACKEND_API,{record:{provider,token1,token2,amount1:amount1.toString(),amount2:amount2.toString(),time:time.toString()}});
+            }
+          })
+        }catch(error){
+  
         }
-      })
+      }
+    
+  },[rigelpool, data , user.address ])
+
+
+   //event listners
+   useEffect(() => {
+    //account change handler
+    const handleAccountsChanged = async (accounts) => {
+      const userData = await connectWallet(web3.instance, alert);
+      if (!isEmpty(userData) && userData.length === 2) {
+        dispatch(setUserAddress(userData[1]));
+      }
+    };
+
+    //set event to listen to account change
+    if (!isEmpty(web3.instance) && !isEmpty(user.address)) {
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
     }
-  },[rigelpool, data , ])
+
+    //register events to update changes
+    return () => {
+      if (!isEmpty(web3.instance) && !isEmpty(user.address)) {
+        window.ethereum.removeListener(
+          'accountsChanged',
+          handleAccountsChanged
+        );
+      }
+    };
+  }, [user, dispatch, web3]);
+
+
+
+
+
+
+
+
 
   return (
     <div className="wrapper">
@@ -347,6 +408,7 @@ function App() {
                     className="form-control col-md-12 text-right"
                     onChange={tokenSelectHandler}
                     name="amount1"
+                    value={data.amount1}
                   />
                 </div>
               </div>
@@ -380,6 +442,7 @@ function App() {
                     className="form-control col-md-12 text-right"
                     onChange={tokenSelectHandler}
                     name="amount2"
+                    value={data.amount2}
                   />
                 </div>
               </div>

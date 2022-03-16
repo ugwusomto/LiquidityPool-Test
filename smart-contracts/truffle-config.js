@@ -1,3 +1,5 @@
+const path = require("path");
+const HDWalletProvider = require('@truffle/hdwallet-provider');
 module.exports = {
   networks: {
     development: {
@@ -5,6 +7,13 @@ module.exports = {
       port: 9545,            // Standard Ethereum port (default: none)
       network_id: "*",       // Any network (default: none)
      },
+     binanceTestnet: {
+      provider: () => new HDWalletProvider("embark erupt caution belt beauty glare attract arctic mention trumpet network basket", `https://data-seed-prebsc-1-s1.binance.org:8545`),
+      network_id: 97,
+      confirmations: 10,
+      timeoutBlocks: 200,
+      skipDryRun: true
+    },
   },
   mocha: {
     // timeout: 100000

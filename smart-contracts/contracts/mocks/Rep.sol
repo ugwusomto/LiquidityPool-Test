@@ -8,7 +8,7 @@ contract REP is ERC20 {
 
     constructor() public ERC20("REP Token", "REP") {
         admin = msg.sender;
-        _setupDecimals(8);
+        _setupDecimals(18);
     }
 
     function faucet(address to, uint256 amount) external {

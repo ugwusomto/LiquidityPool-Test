@@ -1,5 +1,5 @@
 import {WEB3_REQUEST,WEB3_SUCCESS ,WEB3_FAIL  , RIGELPOOL_REQUEST,RIGELPOOL_SUCCESS ,RIGELPOOL_FAIL ,
-    WALLET_CONNECT_REQUEST, WALLET_CONNECT_SUCCESS , WALLET_CONNECT_FAIL , WALLET_DISCONNECT_SUCCESS,
+    WALLET_CONNECT_REQUEST, WALLET_CONNECT_SUCCESS , WALLET_CONNECT_FAIL , WALLET_DISCONNECT_SUCCESS,INITIALIZE_USER_ADDRESS
 } from "../constants";
 
 export const web3Reducer = (state = {loading:false} , action) => {
@@ -39,6 +39,8 @@ export const userAccountReducer = (state = {loading:false} , action) => {
             return {loading:false,...action.payload}
         case WALLET_DISCONNECT_SUCCESS:
             return {loading: false}
+        case INITIALIZE_USER_ADDRESS:
+                return {...state , address : action.payload , loading: false} 
         default:
             return state;
     }
