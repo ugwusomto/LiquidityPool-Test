@@ -8,7 +8,7 @@ module.exports = {
       network_id: "*",       // Any network (default: none)
      },
      binanceTestnet: {
-      provider: () => new HDWalletProvider("embark erupt caution belt beauty glare attract arctic mention trumpet network basket", `https://data-seed-prebsc-1-s1.binance.org:8545`),
+      provider: () => new HDWalletProvider("", `https://data-seed-prebsc-1-s1.binance.org:8545`),
       network_id: 97,
       confirmations: 10,
       timeoutBlocks: 200,
